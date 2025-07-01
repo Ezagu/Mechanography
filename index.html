@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mechanography</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1 class="title">MECHANOGRAPHY</h1>
+  <div class="js-display display"></div>
+  <div class="input-container">
+    <input type="text" class="js-input input" onkeyup="
+      onKeyUpInput(event);
+    ">
+    <button class="reset-button" onclick="
+      reset();
+    ">Reset</button>
+    <div class="quantity-container">
+      <p>Words:</p>
+      <input type="number" class="js-quantity-input quantity-input" value="20" onkeydown="
+        resetKeyPressed(event);
+      ">
+    </div>
+  </div>
+  <div class="js-score score-container">
+    <h2 class="score-title">Result</h2>
+    <p class="js-wpm wpm">0 WPM</p>
+    <div class="score-element">
+      <div>Keystrokes</div>
+      <div class="js-keystrokes"></div>
+    </div>
+    <div class="score-element">
+      <div>Accuracy</div>
+      <div class="js-accuracy"></div>
+    </div>
+    <div class="score-element">
+      <div>Correct words</div>
+      <div class="js-correct-words"></div>
+    </div>
+    <div class="score-element">
+      <div>Wrong words</div>
+      <div class="js-wrong-words"></div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
