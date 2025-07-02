@@ -1,11 +1,18 @@
 const wordsList = ['hello', 'back', 'cat', 'dog', 'ruin', 'socks', 'read', 'piano', 'pencil', 'red', 'white', 'clock'];
 
 const inputElement = document.querySelector('.js-input');
-const displayElement = document.querySelector('.js-display');
+const wordsContainerElement = document.querySelector('.js-words-container');
+const timerElement = document.querySelector('.js-timer');
+const quantityInputElement = document.querySelector('.js-quantity-input');
 let actualWordElem;
 
-let quantityWords = 20;
+let intervalTimerId;
+let quantityTimer = 10;
 let wordIndex = 0;
+let time;
+let isPlaying = false;
+let isShowingResult = false;
+const quantityWords= 200;
 const score = {
   wrongChar: 0,
   correctChar: 0,
@@ -13,9 +20,8 @@ const score = {
   correctWord: 0
 }
 
-updateQuantityWords();
+updateQuantityTimer();
 showWordsInDisplay(quantityWords);
-displayResults();
 
 function showWordsInDisplay(quantity){
   // Create al the words and show it on the display
@@ -28,7 +34,7 @@ function showWordsInDisplay(quantity){
     }
     displayHtml += `<div id="word${i}" class="word">${word}</div>`;
   }
-  displayElement.innerHTML = displayHtml;
+  wordsContainerElement.innerHTML = displayHtml;
   actualWordElem = document.querySelector('#word0');
 }
 
@@ -44,6 +50,8 @@ function nextWord() {
   }
   actualWordElem = document.querySelector(`#word${wordIndex}`);
   actualWordElem.classList.add('js-actual-word');
+
+  actualWordElem.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
 }
 
 function displayResults() {
@@ -51,17 +59,25 @@ function displayResults() {
   const accuracyElem = document.querySelector('.js-accuracy');
   const correctWordsElem = document.querySelector('.js-correct-words');
   const wrongWordsElem = document.querySelector('.js-wrong-words');
+  const wpmElem = document.querySelector('.js-wpm');
 
   const keystrokes = score.correctChar + score.wrongChar;
   const accuracy = Math.floor(score.correctChar / (score.correctChar + score.wrongChar) * 100) || 0;
+  const wpm = 60 / quantityTimer * score.correctWord;
 
+  wpmElem.innerHTML = `${wpm} WPM`; 
   keystrokesElem.innerHTML = `(<span class="green-color">${score.correctChar}</span> | <span class="red-color">${score.wrongChar}</span>) ${keystrokes}`;
   accuracyElem.innerHTML = `${accuracy}%`
   correctWordsElem.innerHTML = `<span class="green-color">${score.correctWord}</span>`;
   wrongWordsElem.innerHTML = `<span class="red-color">${score.wrongWord}</span>`;
+  
+  inputElement.blur();
+  toggleDisplayResult();
 }
 
 function onKeyUpInput(event) {
+  if(isShowingResult) return;
+
   // Put the background red on the word if the input is wrong
   if(!compareWord()){
     actualWordElem.classList.add('bgc-red');
@@ -71,7 +87,13 @@ function onKeyUpInput(event) {
   }
 
   // If one key was pressed in the input
-  if (event.key != ' ' && event.key != 'Backspace') {
+  if (event.key != ' ' && event.key != 'Backspace' && event.key != 'Enter') {
+    // If not playing then start the timer
+    if(!isPlaying) {
+      startTimer();
+      isPlaying = true;
+    }
+
     // Compare the chars and update score
     if(compareChar()) {
       score.correctChar++;
@@ -125,15 +147,52 @@ function compareChar() {
 }
 
 function reset(){
+  isPlaying = false;
   score.wrongChar = 0;
   score.correctWord = 0;
   score.correctChar = 0;
   score.wrongWord = 0;
   inputElement.value = '';
   wordIndex = 0;
-  updateQuantityWords()
   showWordsInDisplay(quantityWords);
-  displayResults();
+  clearInterval(intervalTimerId);
+  updateQuantityTimer();
+  timerElement.innerHTML = quantityTimer;
+  document.querySelector('.js-display').scrollTop = 0;
+  inputElement.focus();
+}
+
+function startTimer() {
+  // Start the timer
+  updateQuantityTimer()
+  time = quantityTimer;
+  intervalTimerId = setInterval(function() {
+    if(time > 0) {
+      time--;
+      timerElement.innerHTML = time;
+    }
+    if(time === 0) {
+      isPlaying = false;
+      displayResults();
+      clearTimeout(intervalTimerId);
+    }
+  }, 1000)
+}
+
+function toggleDisplayResult() {
+  // Show or not the result modal window
+  if(document.querySelector('.js-result-bg').style.display === 'block') {
+    //Hide
+    document.querySelector('.js-result-bg')
+    .style.display = 'none';
+    isShowingResult = false;
+  }
+  else {
+    //Show
+    document.querySelector('.js-result-bg')
+    .style.display = 'block';
+    isShowingResult = true;
+  }
 }
 
 function resetKeyPressed(event) {
@@ -143,8 +202,12 @@ function resetKeyPressed(event) {
   }
 }
 
-function updateQuantityWords() {
-  quantityWords = Number(document.querySelector('.js-quantity-input').value) || 20;
+function updateQuantityTimer() {
+  quantityTimer = Number(quantityInputElement.value) || 60;
+  if(quantityTimer < 30) {
+    quantityInputElement.value = 30;
+    quantityTimer = 30;
+  }
 }
 
 function getActualWord() {
