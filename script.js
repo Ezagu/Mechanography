@@ -1,10 +1,13 @@
 const wordsList = ['hello', 'back', 'cat', 'dog', 'ruin', 'socks', 'read', 'piano', 'pencil', 'red', 'white', 'clock', 'perfect', 'rain', 'modify', 'single', 'incorrect', 'dinosaur', 'elephant', 'nowhere', 'who', 'by', 'it', 'route', 'mass', 'effect', 'insert', 'alone', 'crazy', 'holiday', 'future', 'annoying', 'easy', 'hard', 'move', 'flower', 'paper'];
 
 const inputElement = document.querySelector('.js-input');
+const resetButtonElement = document.querySelector('.js-reset-button');
+const quantityInputElement = document.querySelector('.js-quantity-input');
+
 const wordsContainerElement = document.querySelector('.js-words-container');
 const timerElement = document.querySelector('.js-timer');
-const quantityInputElement = document.querySelector('.js-quantity-input');
 const resultBgElement = document.querySelector('.js-result-bg');
+
 const quantityWords= 500;
 const score = {
   wrongChar: 0,
@@ -12,7 +15,6 @@ const score = {
   wrongWord: 0,
   correctWord: 0
 }
-
 let currentWordElem;
 let intervalTimerId;
 let quantityTimer = 60;
@@ -21,6 +23,20 @@ let time;
 let isPlaying = false;
 
 showWordsInDisplay(quantityWords);
+
+// Event Listener
+
+document.querySelector('.js-close-button')
+  .addEventListener('click', () => {
+    toggleDisplayResult();
+    reset();
+  });
+
+inputElement.addEventListener('keyup', (event) => onKeyUpInput(event));
+
+resetButtonElement.addEventListener('click', () => reset());
+
+quantityInputElement.addEventListener('keydown', (event) => resetKeyPressed(event));
 
 function onKeyUpInput(event) {
   // Put the background red on the word if the input is wrong

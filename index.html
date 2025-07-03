@@ -28,10 +28,7 @@
         <div class="js-wrong-words"></div>
       </div>
     </div>
-    <button class="close-button" onclick="
-      toggleDisplayResult();
-      reset();
-    ">Close</button>
+    <button class="close-button js-close-button">Close</button>
   </div>
   
   <div class="game-container">
@@ -41,18 +38,12 @@
       <div class="words-container js-words-container"></div>
     </div>
     <div class="input-container">
-      <input type="text" class="js-input input" onkeyup="
-        onKeyUpInput(event);
-      ">
-      <button class="reset-button" onclick="
-        reset();
-      ">Reset</button>
+      <input type="text" class="js-input input">
+      <button class="reset-button js-reset-button">Reset</button>
       <div class="timer js-timer">60</div>
       <div class="quantity-container">
         <p>Timer:</p>
-        <input type="number" class="js-quantity-input quantity-input" value="60" onkeydown="
-          resetKeyPressed(event);
-        ">
+        <input type="number" class="js-quantity-input quantity-input" value="60">
       </div>
     </div>
   </div>
