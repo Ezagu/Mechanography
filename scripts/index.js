@@ -24,7 +24,7 @@ let gameMode = 'time';
 let playingTime = 30;
 let timer;
 let intervalTimerId;
-let playingWords = 30;
+let playingWords = 15;
 let temp = 0;
 let intervalTempId;
 

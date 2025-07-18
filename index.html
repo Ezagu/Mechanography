@@ -9,24 +9,6 @@
 <body>
   <div class="score-bg js-result-bg">
     <div class="js-score-container score-container">
-      <h2 class="score-title">Result</h2>
-      <p class="js-wpm wpm">0 WPM</p>
-      <div class="score-element">
-        <div>Keystrokes</div>
-        <div class="js-keystrokes"></div>
-      </div>
-      <div class="score-element">
-        <div>Accuracy</div>
-        <div class="js-accuracy"></div>
-      </div>
-      <div class="score-element">
-        <div>Correct words</div>
-        <div class="js-correct-words"></div>
-      </div>
-      <div class="score-element">
-        <div>Wrong words</div>
-        <div class="js-wrong-words"></div>
-      </div>
     </div>
     <button class="close-button js-close-button">Close</button>
   </div>
@@ -39,7 +21,9 @@
     </div>
     <div class="input-container">
       <input type="text" class="js-input input">
-      <button class="reset-button js-reset-button">Reset</button>
+      <button class="reset-button js-reset-button">
+        <img src="images/reset.svg" class="reset-img">
+      </button>
       <input type="number" class="js-quantity-input quantity-input" value="30">
       <div class="gamemode-container">
         <button class="gamemode-button js-time-button button-active">Time</button>

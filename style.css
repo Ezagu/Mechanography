@@ -1,6 +1,7 @@
-p, div, body {
+* {
   box-sizing:border-box;
   margin: 0;
+  padding: 0;
 }
 
 body {
@@ -90,13 +91,23 @@ body {
 
 .reset-button {
   border: none;
-  background-color: rgb(14, 153, 153);
-  padding: 10px;
+  background-color: #333;
+  padding-top: 5px;
   border-radius: 8px;
   color: #eee;
   font-size: 20px;
   cursor: pointer;
   flex-grow: 1;
+  transition: background-color 0.2s;
+}
+
+.reset-button:hover {
+  background-color: rgb(14, 153, 153);
+}
+
+.reset-img {
+  height: 25px;
+  width: 25px;
 }
 
 .quantity-input {
