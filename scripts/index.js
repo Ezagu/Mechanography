@@ -5,10 +5,11 @@ const resetButtonElement = document.querySelector('.js-reset-button');
 const quantityInputElement = document.querySelector('.js-quantity-input');
 
 const wordsContainerElement = document.querySelector('.js-words-container');
-const timerElement = document.querySelector('.js-timer');
 const resultBgElement = document.querySelector('.js-result-bg');
 
-let quantityWords = 60;
+const timeButton = document.querySelector('.js-time-button');
+const wordsButton = document.querySelector('.js-words-button');
+
 const score = {
   wrongChar: 0,
   correctChar: 0,
@@ -23,21 +24,9 @@ let time;
 let isPlaying = false;
 let gameMode = 'time';
 
-if(gameMode === 'time') {
-  getWords(200).then(() => {
-    renderWords(quantityWords);
-  });
-}
-else if(gameMode === 'word') {
-  getWords(quantityWords).then(() => {
-    renderWords(quantityWords);
-  });
-}
-
-
+renderWords();
 
 // Event Listener
-
 document.querySelector('.js-close-button')
   .addEventListener('click', () => {
     toggleDisplayResult();
@@ -49,6 +38,22 @@ inputElement.addEventListener('keyup', (event) => onKeyUpInput(event));
 resetButtonElement.addEventListener('click', () => reset());
 
 quantityInputElement.addEventListener('keydown', (event) => resetKeyPressed(event));
+
+timeButton.addEventListener('click', () => {
+  if(gameMode === 'time') return;
+
+  timeButton.classList.add('button-active');
+  wordsButton.classList.remove('button-active');
+  gameMode = 'time';
+});
+
+wordsButton.addEventListener('click', () => {
+  if(gameMode === 'words') return;
+
+  wordsButton.classList.add('button-active');
+  timeButton.classList.remove('button-active');
+  gameMode = 'words';
+});
 
 function onKeyUpInput(event) {
   console.log(event);
@@ -95,19 +100,15 @@ function reset(){
 
   inputElement.value = '';
   wordIndex = 0;
-  // Reset the words in display
-  getWords(200).then(() => {
-    renderWords(quantityWords);
-  });
   // Stop timer
   clearInterval(intervalTimerId);
   // Reset timer
   updateQuantityTimer();
-  timerElement.innerHTML = quantityTimer;
   // Scroll the display to top
   document.querySelector('.js-display').scrollTop = 0;
   // Set focus on input
   inputElement.focus();
+  renderWords();
 }
 
 function startTimer() {
@@ -141,6 +142,8 @@ function updateQuantityTimer() {
     quantityTimer = 30;
   }
 }
+
+// Game logic
 
 function nextWord() {
   // Change to the next word in the list
@@ -194,7 +197,15 @@ function getInputValue() {
 
 //-------------DOM--------------
 
-function renderWords(){
+async function renderWords(){
+  if(gameMode === 'time') {
+    await getWords(200);
+  }
+  else if (gameMode === 'words') {
+    const quantityWords = document.querySelector('.js-quantity-input').value;
+    await getWords(quantityWords);
+  }
+
   let displayHtml = '';
 
   wordsList.forEach((word, i) => {
