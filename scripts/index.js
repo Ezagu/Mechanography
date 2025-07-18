@@ -8,7 +8,7 @@ const wordsContainerElement = document.querySelector('.js-words-container');
 const timerElement = document.querySelector('.js-timer');
 const resultBgElement = document.querySelector('.js-result-bg');
 
-const quantityWords= 500;
+let quantityWords = 60;
 const score = {
   wrongChar: 0,
   correctChar: 0,
@@ -21,10 +21,19 @@ let quantityTimer = 60;
 let wordIndex = 0;
 let time;
 let isPlaying = false;
+let gameMode = 'time';
 
-getWords(100).then(() => {
-  renderWords(quantityWords);
-});
+if(gameMode === 'time') {
+  getWords(200).then(() => {
+    renderWords(quantityWords);
+  });
+}
+else if(gameMode === 'word') {
+  getWords(quantityWords).then(() => {
+    renderWords(quantityWords);
+  });
+}
+
 
 
 // Event Listener
@@ -42,13 +51,12 @@ resetButtonElement.addEventListener('click', () => reset());
 quantityInputElement.addEventListener('keydown', (event) => resetKeyPressed(event));
 
 function onKeyUpInput(event) {
+  console.log(event);
   // Put the background red on the word if the input is wrong
   if(!compareWord()){
-    // Wrong word
     currentWordElem.classList.add('bgc-red');
   }
   else {
-    // Correct word
     currentWordElem.classList.remove('bgc-red');
   }
   // If one key was pressed in the input
@@ -60,15 +68,13 @@ function onKeyUpInput(event) {
     }
     // Compare the chars and update score
     if(compareChar()) {
-      // Correct char
       score.correctChar++;
     }
     else {
-      // Wrong char
       score.wrongChar++;
     }
   }
-  else if(event.key === ' ') {
+  else if(event.key === ' ' || event.code === 'Space') {
     // If the input was a space then submit the word
     if(getInputValue().replaceAll(' ', '') === '') {
       // If nothing is write then dont submit
@@ -90,7 +96,9 @@ function reset(){
   inputElement.value = '';
   wordIndex = 0;
   // Reset the words in display
-  renderWords(quantityWords);
+  getWords(200).then(() => {
+    renderWords(quantityWords);
+  });
   // Stop timer
   clearInterval(intervalTimerId);
   // Reset timer

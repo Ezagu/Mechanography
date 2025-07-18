@@ -87,34 +87,12 @@ body {
 .reset-button {
   border: none;
   background-color: rgb(14, 153, 153);
-  padding: 13px;
+  padding: 10px;
   border-radius: 8px;
   color: #eee;
   font-size: 20px;
   cursor: pointer;
   flex-grow: 1;
-}
-
-.timer {
-  color: #fff;
-  font-size: 40px;
-  align-self: center;
-  min-width: 60px;
-  text-align: center;
-  flex-grow: 1;
-}
-
-.quantity-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-grow: 1;
-}
-
-.quantity-container p {
-  font-size: 20px;
-  color: #aaa;
 }
 
 .quantity-input {
@@ -125,13 +103,43 @@ body {
   text-align: center;
   padding: 3px 0;
   font-size: 23px;
-  border-radius: 5px;
+  border-radius: 8px;
+  font-size: 30px;
+}
+
+.quantity-input:focus,
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 8px 0 rgb(14, 153, 153);
 }
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
 }
+
+.gamemode-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.gamemode-button {
+  font-size: 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #333;
+  color: #777;
+  cursor: pointer;
+  padding: 3px 8px;
+}
+
+.button-active {
+  background-color: rgb(14, 153, 153);
+  color: #fff;
+}
+
+/*-------------SCORE RESULTS--------------*/
 
 .score-bg {
   position: absolute;
@@ -191,6 +199,8 @@ input::-webkit-inner-spin-button {
   border-radius: 15px;
   cursor: pointer;
 }
+
+/*----------UTILS----------*/
 
 .red-color {
   color: rgb(192, 51, 51);
