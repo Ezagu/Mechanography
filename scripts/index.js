@@ -17,12 +17,16 @@ const score = {
   correctWord: 0
 }
 let currentWordElem;
-let intervalTimerId;
-let quantityTimer = 60;
 let wordIndex = 0;
-let time;
 let isPlaying = false;
+
 let gameMode = 'time';
+let playingTime = 30;
+let timer;
+let intervalTimerId;
+let playingWords = 30;
+let temp = 0;
+let intervalTempId;
 
 renderWords();
 
@@ -40,23 +44,48 @@ resetButtonElement.addEventListener('click', () => reset());
 quantityInputElement.addEventListener('keydown', (event) => resetKeyPressed(event));
 
 timeButton.addEventListener('click', () => {
-  if(gameMode === 'time') return;
+  if(gameMode === 'time' || isPlaying) return;
 
   timeButton.classList.add('button-active');
   wordsButton.classList.remove('button-active');
   gameMode = 'time';
+  renderWords();
 });
 
 wordsButton.addEventListener('click', () => {
-  if(gameMode === 'words') return;
+  if(gameMode === 'words' || isPlaying) return;
 
   wordsButton.classList.add('button-active');
   timeButton.classList.remove('button-active');
   gameMode = 'words';
+  renderWords();
 });
 
+function startGame() {
+  isPlaying = true;
+  quantityInputElement.disabled = true;
+  if(gameMode === 'time') {
+    startTimer();
+  }
+  else if(gameMode === 'words') {
+    startTemp();
+  }
+}
+
+function stopGame() {
+  isPlaying = false;
+  quantityInputElement.disabled = false;
+  if(gameMode === 'time') {
+    calculateUpdateResults();
+    clearTimeout(intervalTimerId);
+  }
+  else if(gameMode === 'words') {
+    calculateUpdateResults();
+    clearTimeout(intervalTempId);
+  }
+}
+
 function onKeyUpInput(event) {
-  console.log(event);
   // Put the background red on the word if the input is wrong
   if(!compareWord()){
     currentWordElem.classList.add('bgc-red');
@@ -66,12 +95,10 @@ function onKeyUpInput(event) {
   }
   // If one key was pressed in the input
   if (event.key != ' ' && event.key != 'Backspace' && event.key != 'Enter') {
-    // If not playing then start the timer
     if(!isPlaying) {
-      startTimer();
-      isPlaying = true;
+      startGame();
     }
-    // Compare the chars and update score
+
     if(compareChar()) {
       score.correctChar++;
     }
@@ -80,7 +107,6 @@ function onKeyUpInput(event) {
     }
   }
   else if(event.key === ' ' || event.code === 'Space') {
-    // If the input was a space then submit the word
     if(getInputValue().replaceAll(' ', '') === '') {
       // If nothing is write then dont submit
       inputElement.value = '';
@@ -92,55 +118,48 @@ function onKeyUpInput(event) {
 
 function reset(){
   isPlaying = false;
-  // Reset score
   score.wrongChar = 0;
   score.correctWord = 0;
   score.correctChar = 0;
   score.wrongWord = 0;
 
   inputElement.value = '';
-  wordIndex = 0;
+  inputElement.focus();
+
+  quantityInputElement.value = playingTime;
+
   // Stop timer
   clearInterval(intervalTimerId);
-  // Reset timer
-  updateQuantityTimer();
   // Scroll the display to top
   document.querySelector('.js-display').scrollTop = 0;
-  // Set focus on input
-  inputElement.focus();
+
   renderWords();
 }
 
 function startTimer() {
-  // Start the timer
-  // Get the time and put it
-  updateQuantityTimer()
-  time = quantityTimer;
+  playingTime = quantityInputElement.value;
+  timer = playingTime;
+
   //Start the interval
-  intervalTimerId = setInterval(function() {
-    if(time > 0) {
-      time--;
-      timerElement.innerHTML = time;
+  intervalTimerId = setInterval(() => {
+    if(timer > 0) {
+      timer--;
+      quantityInputElement.value = timer;
     }
-    if(time === 0) {
-      // Time up
-      isPlaying = false;
-      calculateUpdateResults();
-      // Stop the interval
-      clearTimeout(intervalTimerId);
+    if(timer === 0) {
+      stopGame();
     }
-  }, 1000)
+  }, 1000);
 }
 
-function updateQuantityTimer() {
-  // Get the value in the input quantity and put it in the variable
-  quantityTimer = Number(quantityInputElement.value) || 60;
+function startTemp() {
+  quantityInputElement.value = 0;
+  temp = 0;
 
-  if(quantityTimer < 30) {
-    // If was an incorrect value, put it 30
-    quantityInputElement.value = 30;
-    quantityTimer = 30;
-  }
+  intervalTempId = setInterval(() => {
+    temp++;
+    quantityInputElement.value = temp;
+  },1000);
 }
 
 // Game logic
@@ -149,6 +168,12 @@ function nextWord() {
   // Change to the next word in the list
   currentWordElem.classList.remove('js-actual-word');
   wordIndex++;
+
+  if(wordIndex === wordsList.length) {
+    stopGame();
+    return;
+  }
+
   currentWordElem = document.querySelector(`#word${wordIndex}`);
   currentWordElem.classList.add('js-actual-word');
   // Move the display scroll to center the actual word
@@ -218,25 +243,41 @@ async function renderWords(){
 
   wordsContainerElement.innerHTML = displayHtml;
   currentWordElem = document.querySelector('#word0');
+  wordIndex = 0;
 }
 
 function calculateUpdateResults() {
-  // Calculate and update the results
-  const keystrokesElem = document.querySelector('.js-keystrokes');
-  const accuracyElem = document.querySelector('.js-accuracy');
-  const correctWordsElem = document.querySelector('.js-correct-words');
-  const wrongWordsElem = document.querySelector('.js-wrong-words');
-  const wpmElem = document.querySelector('.js-wpm');
-
   const keystrokes = score.correctChar + score.wrongChar;
   const accuracy = Math.floor(score.correctChar / (score.correctChar + score.wrongChar) * 100) || 0;
-  const wpm = 60 / quantityTimer * score.correctWord;
+  const wpm = 60 / playingTime * score.correctWord;
 
-  wpmElem.innerHTML = `${wpm} WPM`; 
-  keystrokesElem.innerHTML = `(<span class="green-color">${score.correctChar}</span> | <span class="red-color">${score.wrongChar}</span>) ${keystrokes}`;
-  accuracyElem.innerHTML = `${accuracy}%`
-  correctWordsElem.innerHTML = `<span class="green-color">${score.correctWord}</span>`;
-  wrongWordsElem.innerHTML = `<span class="red-color">${score.wrongWord}</span>`;
+  document.querySelector('.js-score-container')
+    .innerHTML = `
+      <h2 class="score-title">Result</h2>
+      <p class="js-wpm wpm">${wpm} WPM</p>
+      <div class="score-element">
+        <div>Time</div>
+        <div>${gameMode === 'time' ? playingTime : temp}s</div>
+      </div>
+      <div class="score-element">
+        <div>Keystrokes</div>
+        <div>
+          (<span class="green-color">${score.correctChar}</span> | <span class="red-color">${score.wrongChar}</span>) ${keystrokes}
+        </div>
+      </div>
+      <div class="score-element">
+        <div>Accuracy</div>
+        <div>${accuracy}%</div>
+      </div>
+      <div class="score-element">
+        <div>Correct words</div>
+        <div class="green-color">${score.correctWord}</div>
+      </div>
+      <div class="score-element">
+        <div>Wrong words</div>
+        <div class="red-color">${score.wrongWord}</div>
+      </div>
+    `;
   // Unfocus the input
   inputElement.blur();
   // Show the results
