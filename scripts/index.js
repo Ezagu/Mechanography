@@ -58,7 +58,8 @@ inputElement.addEventListener('keyup', (event) => {
       score.wrongChar++;
     }
   }
-  else if(event.key === ' ' || event.code === 'Space') {
+
+  if(inputElement.value.endsWith(' ')) {
     if(getInputValue().replaceAll(' ', '') === '') {
       // If nothing is write then dont submit
       inputElement.value = '';
