@@ -1,4 +1,4 @@
-const wordsList = ['hello', 'back', 'cat', 'dog', 'ruin', 'socks', 'read', 'piano', 'pencil', 'red', 'white', 'clock', 'perfect', 'rain', 'modify', 'single', 'incorrect', 'dinosaur', 'elephant', 'nowhere', 'who', 'by', 'it', 'route', 'mass', 'effect', 'insert', 'alone', 'crazy', 'holiday', 'future', 'annoying', 'easy', 'hard', 'move', 'flower', 'paper'];
+import { wordsList, getWords } from './words.js';
 
 const inputElement = document.querySelector('.js-input');
 const resetButtonElement = document.querySelector('.js-reset-button');
@@ -22,7 +22,10 @@ let wordIndex = 0;
 let time;
 let isPlaying = false;
 
-showWordsInDisplay(quantityWords);
+getWords(100).then(() => {
+  renderWords(quantityWords);
+});
+
 
 // Event Listener
 
@@ -87,7 +90,7 @@ function reset(){
   inputElement.value = '';
   wordIndex = 0;
   // Reset the words in display
-  showWordsInDisplay(quantityWords);
+  renderWords(quantityWords);
   // Stop timer
   clearInterval(intervalTimerId);
   // Reset timer
@@ -183,20 +186,17 @@ function getInputValue() {
 
 //-------------DOM--------------
 
-function showWordsInDisplay(quantity){
-  // Create al the words and show it on the display
+function renderWords(){
   let displayHtml = '';
-  for(let i = 0; i < quantity; i++) {
-    // Get a random word
-    const word = wordsList[Math.floor(Math.random() * wordsList.length)];
+
+  wordsList.forEach((word, i) => {
     if(i === 0) {
-      // If it is the first word then put it as actual word
       displayHtml += `<div id="word0" class="word js-actual-word">${word}</div>`;
-      continue;
+      return;
     }
-    // Generate html
     displayHtml += `<div id="word${i}" class="word">${word}</div>`;
-  }
+  });
+
   wordsContainerElement.innerHTML = displayHtml;
   currentWordElem = document.querySelector('#word0');
 }
