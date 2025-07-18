@@ -33,59 +33,11 @@ renderWords();
 // Event Listener
 document.querySelector('.js-close-button')
   .addEventListener('click', () => {
-    toggleDisplayResult();
     reset();
+    toggleDisplayResult();
   });
 
-inputElement.addEventListener('keyup', (event) => onKeyUpInput(event));
-
-resetButtonElement.addEventListener('click', () => reset());
-
-quantityInputElement.addEventListener('keydown', (event) => resetKeyPressed(event));
-
-timeButton.addEventListener('click', () => {
-  if(gameMode === 'time' || isPlaying) return;
-
-  timeButton.classList.add('button-active');
-  wordsButton.classList.remove('button-active');
-  gameMode = 'time';
-  renderWords();
-});
-
-wordsButton.addEventListener('click', () => {
-  if(gameMode === 'words' || isPlaying) return;
-
-  wordsButton.classList.add('button-active');
-  timeButton.classList.remove('button-active');
-  gameMode = 'words';
-  renderWords();
-});
-
-function startGame() {
-  isPlaying = true;
-  quantityInputElement.disabled = true;
-  if(gameMode === 'time') {
-    startTimer();
-  }
-  else if(gameMode === 'words') {
-    startTemp();
-  }
-}
-
-function stopGame() {
-  isPlaying = false;
-  quantityInputElement.disabled = false;
-  if(gameMode === 'time') {
-    calculateUpdateResults();
-    clearTimeout(intervalTimerId);
-  }
-  else if(gameMode === 'words') {
-    calculateUpdateResults();
-    clearTimeout(intervalTempId);
-  }
-}
-
-function onKeyUpInput(event) {
+inputElement.addEventListener('keyup', (event) => {
   // Put the background red on the word if the input is wrong
   if(!compareWord()){
     currentWordElem.classList.add('bgc-red');
@@ -114,6 +66,77 @@ function onKeyUpInput(event) {
     }
     submitWord();
   }
+});
+
+resetButtonElement.addEventListener('click', () => reset());
+
+quantityInputElement.addEventListener('blur', () => {
+  if(gameMode === 'time') {
+    playingTime = quantityInputElement.value;
+    if(playingTime < 30) {
+      playingTime = 30;
+      quantityInputElement.value = 30;
+    }
+  }
+  else if(gameMode === 'words') {
+    playingWords = quantityInputElement.value;
+    if(playingWords < 15) {
+      playingWords = 15;
+      quantityInputElement.value = 15;
+    }
+  }
+  renderWords();
+});
+
+quantityInputElement.addEventListener('keydown', (event) => {
+  if(event.key === 'Enter') {
+    quantityInputElement.blur();
+    inputElement.focus();
+  }
+});
+
+timeButton.addEventListener('click', () => {
+  timeButton.classList.add('button-active');
+  wordsButton.classList.remove('button-active');
+  gameMode = 'time';
+  reset();
+});
+
+wordsButton.addEventListener('click', () => {
+  wordsButton.classList.add('button-active');
+  timeButton.classList.remove('button-active');
+  gameMode = 'words';
+  reset();
+});
+
+//--------FUNCTIONS-----------
+
+function startGame() {
+  isPlaying = true;
+  quantityInputElement.disabled = true;
+  if(gameMode === 'time') {
+    playingTime = quantityInputElement.value;
+    startTimer();
+  }
+  else if(gameMode === 'words') {
+    playingWords = quantityInputElement.value;
+    quantityInputElement.value = 0;
+    startTemp();
+  }
+}
+
+function finishGame() {
+  isPlaying = false;
+  quantityInputElement.disabled = false;
+  inputElement.disabled = true;
+  if(gameMode === 'time') {
+    clearTimeout(intervalTimerId);
+    calculateUpdateResults();
+  }
+  else if(gameMode === 'words') {
+    clearTimeout(intervalTempId);
+    calculateUpdateResults();
+  }
 }
 
 function reset(){
@@ -123,37 +146,34 @@ function reset(){
   score.correctChar = 0;
   score.wrongWord = 0;
 
-  inputElement.value = '';
-  inputElement.focus();
-
-  quantityInputElement.value = playingTime;
-
-  // Stop timer
-  clearInterval(intervalTimerId);
-  // Scroll the display to top
-  document.querySelector('.js-display').scrollTop = 0;
+  quantityInputElement.disabled = false;
+  if(gameMode === 'time') {
+    quantityInputElement.value = playingTime;
+  }
+  else if(gameMode === 'words') {
+    quantityInputElement.value = playingWords;
+  }
+  clearTimeout(intervalTimerId);
+  clearTimeout(intervalTempId);
 
   renderWords();
 }
 
 function startTimer() {
-  playingTime = quantityInputElement.value;
   timer = playingTime;
 
-  //Start the interval
   intervalTimerId = setInterval(() => {
     if(timer > 0) {
       timer--;
       quantityInputElement.value = timer;
     }
     if(timer === 0) {
-      stopGame();
+      finishGame();
     }
   }, 1000);
 }
 
 function startTemp() {
-  quantityInputElement.value = 0;
   temp = 0;
 
   intervalTempId = setInterval(() => {
@@ -170,7 +190,7 @@ function nextWord() {
   wordIndex++;
 
   if(wordIndex === wordsList.length) {
-    stopGame();
+    finishGame();
     return;
   }
 
@@ -227,8 +247,8 @@ async function renderWords(){
     await getWords(200);
   }
   else if (gameMode === 'words') {
-    const quantityWords = document.querySelector('.js-quantity-input').value;
-    await getWords(quantityWords);
+    playingWords = document.querySelector('.js-quantity-input').value;
+    await getWords(playingWords);
   }
 
   let displayHtml = '';
@@ -244,17 +264,26 @@ async function renderWords(){
   wordsContainerElement.innerHTML = displayHtml;
   currentWordElem = document.querySelector('#word0');
   wordIndex = 0;
+  document.querySelector('.js-display').scrollTop = 0;
+  inputElement.disabled = false;
+  inputElement.value = '';
 }
 
 function calculateUpdateResults() {
   const keystrokes = score.correctChar + score.wrongChar;
   const accuracy = Math.floor(score.correctChar / (score.correctChar + score.wrongChar) * 100) || 0;
-  const wpm = 60 / playingTime * score.correctWord;
-
+  let wpm;
+  if(gameMode === 'time') {
+    wpm = 60 / playingTime * score.correctWord;
+  }
+  else if(gameMode === 'words') {
+    wpm = 60 / temp * score.correctWord;
+  }
+  
   document.querySelector('.js-score-container')
     .innerHTML = `
       <h2 class="score-title">Result</h2>
-      <p class="js-wpm wpm">${wpm} WPM</p>
+      <p class="js-wpm wpm">${Math.round(wpm)} WPM</p>
       <div class="score-element">
         <div>Time</div>
         <div>${gameMode === 'time' ? playingTime : temp}s</div>
@@ -278,27 +307,16 @@ function calculateUpdateResults() {
         <div class="red-color">${score.wrongWord}</div>
       </div>
     `;
-  // Unfocus the input
+
   inputElement.blur();
-  // Show the results
   toggleDisplayResult();
 }
 
 function toggleDisplayResult() {
-  // Show or not the result modal window
   if(resultBgElement.style.display === 'block') {
-    //Hide
     resultBgElement.style.display = 'none';
   }
   else {
-    //Show
     resultBgElement.style.display = 'block';
-  }
-}
-
-function resetKeyPressed(event) {
-  // If enter was pressed in the quantity input then reset
-  if(event.key === 'Enter') {
-    reset();
   }
 }
